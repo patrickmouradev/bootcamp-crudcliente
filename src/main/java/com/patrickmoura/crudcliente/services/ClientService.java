@@ -2,6 +2,8 @@ package com.patrickmoura.crudcliente.services;
 
 import java.util.Optional;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,8 +14,6 @@ import com.patrickmoura.crudcliente.dto.ClientDTO;
 import com.patrickmoura.crudcliente.entities.Client;
 import com.patrickmoura.crudcliente.repositories.ClientRepository;
 import com.patrickmoura.crudcliente.services.exceptions.ResourceNotFoundException;
-
-
 
 @Service
 public class ClientService {
@@ -33,6 +33,38 @@ public class ClientService {
 		Optional<Client> obj = repository.findById(id);
 		Client entity = obj.orElseThrow(() -> new ResourceNotFoundException("Entity not Found"));
 		return new ClientDTO(entity);
+	}
+	
+	@Transactional
+	public ClientDTO insert(ClientDTO dto) {
+		Client entity = new Client();
+		copyDtotoEntity(dto, entity);
+		entity = repository.save(entity);
+
+		return new ClientDTO(entity);
+	}
+	
+	@Transactional
+	public ClientDTO update(Long id, ClientDTO dto) {
+		try {
+			Client entity = repository.getOne(id);
+			copyDtotoEntity(dto, entity);
+			entity = repository.save(entity);
+
+			return new ClientDTO(entity);
+
+		} catch (EntityNotFoundException e) {
+			throw new ResourceNotFoundException("Id not found " + id);
+		}
+
+	}
+
+	private void copyDtotoEntity(ClientDTO dto, Client entity) {
+		entity.setName(dto.getName());
+		entity.setCpf(dto.getCpf());
+		entity.setIncome(dto.getIncome());
+		entity.setBirthDate(dto.getBirthDate());
+		entity.setChildren(dto.getChildren());
 	}
 
 }
