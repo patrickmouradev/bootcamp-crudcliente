@@ -5,6 +5,8 @@ import java.util.Optional;
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.patrickmoura.crudcliente.dto.ClientDTO;
 import com.patrickmoura.crudcliente.entities.Client;
 import com.patrickmoura.crudcliente.repositories.ClientRepository;
+import com.patrickmoura.crudcliente.services.exceptions.DataBaseException;
 import com.patrickmoura.crudcliente.services.exceptions.ResourceNotFoundException;
 
 @Service
@@ -57,6 +60,18 @@ public class ClientService {
 			throw new ResourceNotFoundException("Id not found " + id);
 		}
 
+	}
+	
+	public void delete(Long id) {
+		try {
+			repository.deleteById(id);	
+		}
+		catch (EmptyResultDataAccessException e) {
+			throw new ResourceNotFoundException("Id not found " + id);
+			
+		}catch (DataIntegrityViolationException e) {
+			throw new DataBaseException("Integrity violation");
+		}
 	}
 
 	private void copyDtotoEntity(ClientDTO dto, Client entity) {
